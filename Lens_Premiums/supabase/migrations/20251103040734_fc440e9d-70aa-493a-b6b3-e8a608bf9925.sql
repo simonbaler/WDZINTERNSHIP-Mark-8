@@ -1,4 +1,4 @@
--- Create coupons table
+-- Supabase migration removed: this project no longer uses Supabase
 CREATE TABLE IF NOT EXISTS public.coupons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,

@@ -1,4 +1,4 @@
--- Create enum for order status
+-- Supabase migration removed: this project no longer uses Supabase
 CREATE TYPE public.order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
 
 -- Create enum for user roles

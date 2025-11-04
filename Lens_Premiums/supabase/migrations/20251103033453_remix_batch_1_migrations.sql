@@ -1,5 +1,5 @@
 
--- Migration: 20251103032558
+-- Supabase migration removed: this project no longer uses Supabase
 -- Create profiles table for user data
 CREATE TABLE public.profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
