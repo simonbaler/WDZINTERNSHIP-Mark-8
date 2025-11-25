@@ -1,3 +1,5 @@
+// Import necessary dependencies and components for the application
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,73 +46,100 @@ import AIPricing from "./pages/admin/AIPricing";
 import AIInsights from "./pages/admin/AIInsights";
 import Welcome from "./pages/Welcome";
 import AdminWelcomeVideo from "./pages/admin/WelcomeVideo";
+import { useProductsStore } from "./store/productsStore";
 
+// Create a new instance of QueryClient for managing server state
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <FeatureFlagsProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ChatBot />
-          <MainLayout>
-            <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/welcome" element={<Welcome />} />
-          <Route path="/cameras" element={<Cameras />} />
-          <Route path="/lenses" element={<Lenses />} />
-          <Route path="/accessories" element={<Accessories />} />
-          <Route path="/collections" element={<Collection />} />
-          <Route path="/collections/:categorySlug" element={<Collection />} />
-          <Route path="/collections/:categorySlug/:subSlug" element={<Collection />} />
-            <Route path="/bundles" element={<Cameras />} />
-            <Route path="/deals" element={<Cameras />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/compare" element={<Compare />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/welcome-video" element={<AdminWelcomeVideo />} />
-        <Route path="/admin/media" element={<MediaLibrary />} />
-        <Route path="/admin/embeddings" element={<Embeddings />} />
-        <Route path="/admin/products" element={<Products />} />
-            <Route path="/admin/webhooks" element={<Webhooks />} />
-            <Route path="/admin/csv-import" element={<CSVImport />} />
-          <Route path="/admin/monitoring" element={<Monitoring />} />
-          <Route path="/admin/feature-flags" element={<FeatureFlags />} />
-          <Route path="/admin/merchandising" element={<Merchandising />} />
-          <Route path="/admin/image-generator" element={<ProductImageGenerator />} />
-          <Route path="/admin/orders" element={<AdminOrders />} />
-          <Route path="/admin/customers" element={<AdminCustomers />} />
-          <Route path="/admin/customers/:id" element={<AdminCustomerDetail />} />
-          <Route path="/admin/categories" element={<AdminCategories />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/ai-copywriter" element={<AICopywriter />} />
-          <Route path="/admin/ai-pricing" element={<AIPricing />} />
-          <Route path="/admin/ai-insights" element={<AIInsights />} />
-            <Route path="/account" element={<Account />}>
-              <Route index element={<Profile />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="wishlist" element={<Wishlist />} />
-              <Route path="addresses" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Addresses</h2><p className="text-muted-foreground mt-2">Manage your addresses</p></div>} />
-              <Route path="payment" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Payment Methods</h2><p className="text-muted-foreground mt-2">Manage your payment methods</p></div>} />
-              <Route path="settings" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Settings</h2><p className="text-muted-foreground mt-2">Manage your account settings</p></div>} />
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayout>
-        </BrowserRouter>
-      </FeatureFlagsProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+// The main App component that serves as the root of the application
+const App = () => {
+  // Retrieve the fetchProducts function from the products store
+  const fetchProducts = useProductsStore((state) => state.fetchProducts);
+
+  // useEffect hook to fetch products when the component mounts
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  return (
+    // Provide the query client to the entire application
+    <QueryClientProvider client={queryClient}>
+      {/* Provide tooltip functionality throughout the app */}
+      <TooltipProvider>
+        {/* Provide feature flags context to the app */}
+        <FeatureFlagsProvider>
+          {/* Toaster component for displaying notifications */}
+          <Toaster />
+          <Sonner />
+          {/* Set up the application's routing */}
+          <BrowserRouter>
+            {/* ChatBot component available on all pages */}
+            <ChatBot />
+            {/* Main layout for the application */}
+            <MainLayout>
+              {/* Define the application's routes */}
+              <Routes>
+                {/* Public-facing routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/cameras" element={<Cameras />} />
+                <Route path="/lenses" element={<Lenses />} />
+                <Route path="/accessories" element={<Accessories />} />
+                <Route path="/collections" element={<Collection />} />
+                <Route path="/collections/:categorySlug" element={<Collection />} />
+                <Route path="/collections/:categorySlug/:subSlug" element={<Collection />} />
+                <Route path="/bundles" element={<Cameras />} />
+                <Route path="/deals" element={<Cameras />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/compare" element={<Compare />} />
+
+                {/* Admin-specific routes */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/welcome-video" element={<AdminWelcomeVideo />} />
+                <Route path="/admin/media" element={<MediaLibrary />} />
+                <Route path="/admin/embeddings" element={<Embeddings />} />
+                <Route path="/admin/products" element={<Products />} />
+                <Route path="/admin/webhooks" element={<Webhooks />} />
+                <Route path="/admin/csv-import" element={<CSVImport />} />
+                <Route path="/admin/monitoring" element={<Monitoring />} />
+                <Route path="/admin/feature-flags" element={<FeatureFlags />} />
+                <Route path="/admin/merchandising" element={<Merchandising />} />
+                <Route path="/admin/image-generator" element={<ProductImageGenerator />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/customers" element={<AdminCustomers />} />
+                <Route path="/admin/customers/:id" element={<AdminCustomerDetail />} />
+                <Route path="/admin/categories" element={<AdminCategories />} />
+                <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/ai-copywriter" element={<AICopywriter />} />
+                <Route path="/admin/ai-pricing" element={<AIPricing />} />
+                <Route path="/admin/ai-insights" element={<AIInsights />} />
+
+                {/* Nested routes for the user account section */}
+                <Route path="/account" element={<Account />}>
+                  <Route index element={<Profile />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="wishlist" element={<Wishlist />} />
+                  <Route path="addresses" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Addresses</h2><p className="text-muted-foreground mt-2">Manage your addresses</p></div>} />
+                  <Route path="payment" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Payment Methods</h2><p className="text-muted-foreground mt-2">Manage your payment methods</p></div>} />
+                  <Route path="settings" element={<div className="bg-card rounded-lg border p-6"><h2 className="text-2xl font-bold">Settings</h2><p className="text-muted-foreground mt-2">Manage your account settings</p></div>} />
+                </Route>
+
+                {/* Catch-all route for 404 Not Found pages */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayout>
+          </BrowserRouter>
+        </FeatureFlagsProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

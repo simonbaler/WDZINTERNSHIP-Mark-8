@@ -1,3 +1,10 @@
+
+/**
+ * Auth component manages user authentication with login and signup forms.
+ * It handles user state, form inputs, validation, and redirects after auth.
+ * Also auto-detects user location for signup.
+ */
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -16,11 +23,11 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  // Login form state
+  // Login form state variables
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Signup form state
+  // Signup form state variables
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -30,17 +37,21 @@ export default function Auth() {
   const [state, setState] = useState('');
   const [pincode, setPincode] = useState('');
 
+  /**
+   * useEffect hook to:
+   * - Redirect to home if already authenticated
+   * - Auto-detect user location for enhanced signup experience
+   */
   useEffect(() => {
-    // Redirect if already logged in
     if (user) {
       navigate('/');
       return;
     }
 
-    // Auto-detect location
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          // Set detected location to state
           setLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude
@@ -55,6 +66,10 @@ export default function Auth() {
     }
   }, [user, navigate]);
 
+  /**
+   * Handles login form submission
+   * Calls signIn method and manages loading/error states
+   */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -73,6 +88,10 @@ export default function Auth() {
     }
   };
 
+  /**
+   * Handles signup form submission
+   * Calls signUp method with user details and location
+   */
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -92,7 +111,7 @@ export default function Auth() {
       if (error) throw error;
 
       toast.success('Account created successfully! You can now login.');
-      // Switch to login tab
+      // Switch to login tab (TODO: implement switching tabs if necessary)
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {
@@ -100,6 +119,7 @@ export default function Auth() {
     }
   };
 
+  // JSX rendering for login and signup forms with tabs and inputs
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
       <motion.div

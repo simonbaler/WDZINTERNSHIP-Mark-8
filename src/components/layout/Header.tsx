@@ -1,3 +1,4 @@
+// Import necessary dependencies and components
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, Heart, ShoppingCart, Menu, X, ChevronDown, Home, LogOut, Mic, GitCompare, Camera as CameraIcon } from 'lucide-react';
@@ -16,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+// Define the navigation items for the header
 const navItems = [
   { 
     label: 'Collections', 
@@ -105,6 +107,7 @@ const navItems = [
   { label: 'Deals', href: '/deals' },
 ];
 
+// The Header component, which serves as the main navigation for the site
 export const Header = () => {
   const navigate = useNavigate();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -117,6 +120,7 @@ export const Header = () => {
   const { user, isAdmin, signOut: authSignOut } = useAuth();
   const totalItems = getTotalItems();
 
+  // Handles the search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -126,6 +130,7 @@ export const Header = () => {
     }
   };
 
+  // Handles the user logout process
   const handleLogout = async () => {
     await authSignOut();
     toast.success('Logged out successfully');
@@ -141,10 +146,10 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Main header */}
+      {/* Main header content */}
       <div className="max-w-[1400px] mx-auto px-6">
         <div className="flex items-center justify-between h-20">
-          {/* Left: Logo & Mobile Menu */}
+          {/* Left section: Logo and mobile menu toggle */}
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -169,7 +174,7 @@ export const Header = () => {
             </div>
           </div>
 
-          {/* Center: Navigation */}
+          {/* Center section: Main navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               item.megaMenu ? (
@@ -209,7 +214,7 @@ export const Header = () => {
             ))}
           </nav>
 
-          {/* Right: Search, Account, Wishlist, Cart */}
+          {/* Right section: Icons for search, account, wishlist, and cart */}
           <div className="flex items-center gap-2">
             {/* Welcome Page Button */}
             <Button
@@ -219,7 +224,6 @@ export const Header = () => {
               onClick={() => navigate('/welcome')}
               className="hidden md:flex"
             >
-              {/* You can use any icon here, for example the Home or CameraIcon or a custom one */}
               <CameraIcon className="h-5 w-5" />
             </Button>
 
@@ -237,7 +241,7 @@ export const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Search */}
+            {/* Search bar */}
             <form onSubmit={handleSearch} className={cn(
               "relative transition-all duration-300",
               isSearchExpanded ? "w-64" : "w-10"
@@ -271,7 +275,7 @@ export const Header = () => {
               )}
             </form>
 
-            {/* Wishlist */}
+            {/* Wishlist button */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -286,7 +290,7 @@ export const Header = () => {
               )}
             </Button>
 
-            {/* Compare */}
+            {/* Compare button */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -301,7 +305,7 @@ export const Header = () => {
               )}
             </Button>
 
-            {/* Account */}
+            {/* Account dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="hidden md:flex">
@@ -327,7 +331,7 @@ export const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Cart */}
+            {/* Cart button */}
             <Button
               variant="ghost"
               size="icon"
@@ -345,7 +349,7 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu, shown when the toggle is clicked */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="max-w-[1400px] mx-auto px-6 py-4 space-y-2">

@@ -1,45 +1,29 @@
-# TODO: Convert Supabase to Node.js with MySQL
+# TODO: Add Comment Lines Across Project Code Files
 
-## Completed
-- [x] Analyze codebase and create conversion plan
-- [x] Get user approval for plan
+## Steps
 
-## In Progress
-- [ ] Create backend/ directory and initialize Node.js project
-- [ ] Install backend dependencies (express, mysql2, jsonwebtoken, bcryptjs, multer, cors, dotenv)
-- [ ] Read and convert Supabase migration files to MySQL schema
-- [ ] Create database connection and configuration
-- [ ] Set up Express server with basic middleware
-- [ ] Implement authentication endpoints (register, login, logout, password reset)
-- [ ] Convert Supabase functions to Express routes:
-  - [ ] ar-showroom
-  - [ ] categories-list
-  - [ ] category-analytics
-  - [ ] compare-products
-  - [ ] csv-import
-  - [ ] edge-personalization
-  - [ ] emit-webhook
-  - [ ] federated-learning
-  - [ ] gdpr-delete
-  - [ ] gdpr-export
-  - [ ] generate-embeddings
-  - [ ] generate-product-images
-  - [ ] health-check
-  - [ ] media-process-notify
-  - [ ] media-signed-upload
-  - [ ] order-created
-  - [ ] product-chat
-  - [ ] products-filter
-  - [ ] provenance-ledger
-  - [ ] replay-webhook
-  - [ ] search-semantic
-  - [ ] search-visual
-  - [ ] webauthn-payment
-- [ ] Implement file upload/storage endpoints
-- [ ] Update src/config/api.ts to use backend URL
-- [ ] Replace Supabase client usage in frontend (auth, database, functions)
-- [ ] Remove @supabase/supabase-js from package.json
-- [ ] Remove supabase/ directory and src/integrations/supabase/
-- [ ] Set up MySQL database and run schema
-- [ ] Test backend endpoints
-- [ ] Test full application
+1. Add file-level, function-level, and inline comments to `src/pages/Auth.tsx` to improve code readability.
+2. Add comments to other key pages in `src/pages/` directory following the pattern used in `Auth.tsx`.
+3. Add comments to custom hooks in `src/hooks/` directory (e.g. `useAuth.ts`, `useToast.ts`).
+4. Add comments to components in:
+   - `src/components/`
+   - `src/components/admin/`
+   - `src/components/cart/`
+   - `src/components/category/`
+   - `src/components/chat/`
+   - `src/components/features/`
+   - `src/components/layout/`
+   - `src/components/product/`
+   - `src/components/products/`
+   - `src/components/search/`
+   - `src/components/ui/`
+5. Add comments to backend route files in `backend/routes/` (e.g. `products.js`).
+6. Add comments to key files in backend root and src (e.g. `backend/server.js`).
+7. Review and refine comments to maintain consistent style and clarity across files.
+
+## Notes:
+- Avoid commenting on non-code files such as assets, config files, JSON data, or markdown documentation.
+- Focus on providing useful context for maintainers and readers.
+- Ensure comments are clear, concise, and reflect the code intent.
+
+Once each step is complete, seek confirmation before proceeding to next.

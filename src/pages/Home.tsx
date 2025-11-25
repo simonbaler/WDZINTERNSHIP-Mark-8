@@ -1,3 +1,4 @@
+// Import necessary components and hooks
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProductsStore } from '@/store/productsStore';
@@ -8,12 +9,14 @@ import { useSiteSettingsStore } from '@/store/siteSettingsStore';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Define the main categories for the home page
 const categories = [
   { name: 'Cameras', icon: Camera, href: '/cameras', image: '/placeholder.svg' },
   { name: 'Lenses', icon: Camera, href: '/lenses', image: '/placeholder.svg' },
   { name: 'Bundles', icon: Package, href: '/bundles', image: '/placeholder.svg' },
 ];
 
+// Define the key features to be displayed on the home page
 const features = [
   { icon: Truck, title: 'Free Shipping', description: 'On orders over ₹4,999' },
   { icon: Shield, title: '30-Day Returns', description: 'Hassle-free returns' },
@@ -21,22 +24,26 @@ const features = [
   { icon: Camera, title: 'Expert Support', description: '24/7 photography advice' },
 ];
 
+// The Home component for the main landing page
 export default function Home() {
   const navigate = useNavigate();
   const welcomeVideoUrl = useSiteSettingsStore((s) => s.welcomeVideoUrl);
 
+  // Redirect to the welcome page if the welcome video hasn't been shown
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('INTRO_SHOWN') === 'true';
     if (!alreadyShown && welcomeVideoUrl) {
       navigate('/welcome');
     }
   }, [navigate, welcomeVideoUrl]);
+  
+  // Get the first 8 products to be featured on the home page
   const featuredProducts = useProductsStore((s) => s.products).slice(0, 8);
-  const isLoading = false;
+  const isLoading = false; // Placeholder for loading state
 
   return (
     <div>
-      {/* Hero Section */}
+      {/* Hero Section: The main banner for the home page */}
       <section className="relative min-h-[600px] flex items-center bg-gradient-to-br from-background via-muted/30 to-background overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 py-20 w-full">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -86,7 +93,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Bar */}
+      {/* Features Bar: A section to highlight key features of the store */}
       <section className="border-y border-border bg-muted/30">
         <div className="max-w-[1400px] mx-auto px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -107,7 +114,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Categories */}
+      {/* Featured Categories: A section to display product categories */}
       <section className="max-w-[1400px] mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,7 +158,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products: A section to showcase a selection of products */}
       <section className="max-w-[1400px] mx-auto px-6 py-20 bg-muted/30">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -168,10 +175,12 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {isLoading ? (
+            // Show skeleton loaders while products are loading
             [...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-[400px]" />
             ))
           ) : (
+            // Render the featured products
             featuredProducts.slice(0, 4).map((product, index) => (
               <motion.div
                 key={product.id}
@@ -196,7 +205,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Call to Action (CTA) Section: A section to encourage users to shop */}
       <section className="max-w-[1400px] mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

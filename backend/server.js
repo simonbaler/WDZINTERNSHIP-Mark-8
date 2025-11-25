@@ -1,3 +1,4 @@
+// Import necessary packages
 const express = require('express');
 const mysql = require('mysql2/promise');
 const jwt = require('jsonwebtoken');
@@ -8,17 +9,19 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+// Initialize the Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Apply middleware
+app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-// Database connection
+// Database connection variable
 let db;
 
+// Function to connect to the MySQL database
 async function connectDB() {
   try {
     db = await mysql.createConnection({
@@ -35,7 +38,7 @@ async function connectDB() {
   }
 }
 
-// Authentication middleware
+// Middleware to authenticate JWT tokens
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -53,7 +56,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// File upload configuration
+// Configure file uploads with multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = process.env.UPLOAD_PATH || './uploads';
@@ -73,34 +76,36 @@ const upload = multer({
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800 }
 });
 
-// Auth routes
+// --- API Routes ---
+
+// Route to register a new user
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, full_name, phone_number } = req.body;
 
-    // Check if user exists
+    // Check if the user already exists
     const [existing] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Hash password
+    // Hash the password for security
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create a new user in the database
     const [result] = await db.execute(
       'INSERT INTO users (email, password_hash, full_name, phone_number) VALUES (?, ?, ?, ?)',
       [email, password_hash, full_name, phone_number]
     );
 
-    // Create profile
+    // Create a user profile
     await db.execute(
       'INSERT INTO profiles (user_id, full_name, phone_number) VALUES (?, ?, ?)',
       [result.insertId, full_name, phone_number]
     );
 
-    // Assign customer role
+    // Assign the 'customer' role to the new user
     await db.execute(
       'INSERT INTO user_roles (user_id, role) VALUES (?, ?)',
       [result.insertId, 'customer']
@@ -113,15 +118,18 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// Route to log in a user
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find the user by email
     const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Check if the password is valid
     const user = users[0];
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
@@ -129,6 +137,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Generate a JWT token for the user
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
@@ -142,7 +151,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Categories routes
+// Route to get all categories
 app.get('/api/categories', async (req, res) => {
   try {
     const [categories] = await db.execute('SELECT * FROM categories ORDER BY name');
@@ -153,7 +162,7 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Products routes
+// Route to get all products with optional filtering
 app.get('/api/products', async (req, res) => {
   try {
     const { category, search, limit = 20, offset = 0 } = req.query;
@@ -181,6 +190,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
+// Route to get a single product by ID
 app.get('/api/products/:id', async (req, res) => {
   try {
     const [products] = await db.execute('SELECT * FROM products WHERE id = ? AND is_active = true', [req.params.id]);
@@ -194,7 +204,7 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-// Orders routes
+// Route to get orders for the authenticated user
 app.get('/api/orders', authenticateToken, async (req, res) => {
   try {
     const [orders] = await db.execute('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [req.user.id]);
@@ -205,11 +215,12 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
   }
 });
 
+// Route to create a new order
 app.post('/api/orders', authenticateToken, async (req, res) => {
   try {
     const { items, shipping_address, payment_method } = req.body;
 
-    // Calculate total
+    // Calculate the total order amount
     let total = 0;
     for (const item of items) {
       const [products] = await db.execute('SELECT price FROM products WHERE id = ?', [item.product_id]);
@@ -219,16 +230,16 @@ app.post('/api/orders', authenticateToken, async (req, res) => {
       total += products[0].price * item.quantity;
     }
 
-    // Generate order number
+    // Generate a unique order number
     const orderNumber = `ORD-${Date.now()}`;
 
-    // Create order
+    // Create the order in the database
     const [orderResult] = await db.execute(
       'INSERT INTO orders (user_id, order_number, total_amount, shipping_address, payment_method) VALUES (?, ?, ?, ?, ?)',
       [req.user.id, orderNumber, total, JSON.stringify(shipping_address), payment_method]
     );
 
-    // Create order items
+    // Create the order items
     for (const item of items) {
       await db.execute(
         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
@@ -243,7 +254,7 @@ app.post('/api/orders', authenticateToken, async (req, res) => {
   }
 });
 
-// Media upload
+// Route to upload a media file
 app.post('/api/media/upload', authenticateToken, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
@@ -254,6 +265,7 @@ app.post('/api/media/upload', authenticateToken, upload.single('file'), async (r
     const mediaType = mimetype.startsWith('image/') ? 'image' :
                      mimetype === 'model/gltf-binary' ? 'glb' : 'document';
 
+    // Save media information to the database
     const [result] = await db.execute(
       'INSERT INTO media (user_id, filename, original_filename, mime_type, file_size, storage_path, media_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [req.user.id, filename, originalname, mimetype, size, req.file.path, mediaType]
@@ -270,7 +282,7 @@ app.post('/api/media/upload', authenticateToken, upload.single('file'), async (r
   }
 });
 
-// Feature flags
+// Route to get all active feature flags
 app.get('/api/feature-flags', async (req, res) => {
   try {
     const [flags] = await db.execute('SELECT flag_key, flag_value FROM feature_flags WHERE is_active = true');
@@ -285,12 +297,12 @@ app.get('/api/feature-flags', async (req, res) => {
   }
 });
 
-// Health check
+// Health check route to verify server status
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Start server
+// Function to start the server
 async function startServer() {
   await connectDB();
   app.listen(PORT, () => {
@@ -298,4 +310,5 @@ async function startServer() {
   });
 }
 
+// Start the server
 startServer().catch(console.error);
