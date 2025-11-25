@@ -1,128 +1,73 @@
-# 🌐 WDZINTERNSHIP - Mark 8
+# Welcome to your Lovable project
 
-# Advanced E-Commerce Website for Camera Store — React Development Internship @ WebDzen Technologies
+## Project info
 
-# 
+**URL**: https://lovable.dev/projects/23d63df9-a1e2-4e66-8400-5e23550b1b2b
 
-# Duration: 10th October 2025 – 10th December 2025
+## How can I edit this code?
 
-# Intern: Simon Raj
+There are several ways of editing your application.
 
-# Company: WebDzen Technologies — www.webdzen.in
+**Use Lovable**
 
-# 
+Simply visit the [Lovable Project](https://lovable.dev/projects/23d63df9-a1e2-4e66-8400-5e23550b1b2b) and start prompting.
 
-# 📘 Short description (repo / brief)
+Changes made via Lovable will be committed automatically to this repo.
 
-# 
+**Use your preferred IDE**
 
-# React frontend + general backend REST APIs for a high-performance e-commerce platform focused on cameras, lenses and accessories. Implements product catalog, cart \& checkout, wishlist, authentication, admin features, and payment integration — built with an intentionally limited tech stack (HTML, CSS, JavaScript, React + a general backend).
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-# 
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-# 🔎 Project Objective
+Follow these steps:
 
-# 
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-# Build a modern, performant, and responsive e-commerce web application for camera products using only the allowed front-end technologies (HTML/CSS/JS/React) and a general backend exposing REST APIs. Focus areas: product discovery, secure auth, reliable cart \& checkout, admin controls, and mobile-first UX.
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-# 
+# Step 3: Install the necessary dependencies.
+npm i
 
-# ✅ Key Features
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
 
-# 
+**Edit a file directly in GitHub**
 
-# Product Catalog: categories, brands, filters, sorting, pagination
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-# 
+**Use GitHub Codespaces**
 
-# Product Pages: specs, image gallery (high-res), reviews \& related items
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-# 
+## What technologies are used for this project?
 
-# Cart \& Checkout: persistent cart, quantity updates, coupon support, shipping calc, guest checkout
+This project is built with:
 
-# 
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-# Wishlist: save items, shareable wishlist links
+## How can I deploy this project?
 
-# 
+Simply open [Lovable](https://lovable.dev/projects/23d63df9-a1e2-4e66-8400-5e23550b1b2b) and click on Share -> Publish.
 
-# Authentication: customer and admin/store staff accounts with role-based access (audit logs)
+## Can I connect a custom domain to my Lovable project?
 
-# 
+Yes, you can!
 
-# User Profiles: order history, saved addresses, payment methods, returns
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-# 
-
-# Inventory \& Order Management: admin low-stock alerts, order processing, refunds, shipment tracking
-
-# 
-
-# Payments: integrate payment gateways via JS SDK + secure backend tokenization
-
-# 
-
-# Reviews \& Ratings: customer reviews with moderation tools
-
-# 
-
-# Responsive \& PWA-ready: mobile-first design, optional PWA features
-
-# 
-
-# SEO \& Accessibility: meta tags, structured data, accessible markup
-
-# 
-
-# 🧩 Technology Stack (limited)
-
-# 
-
-# Frontend
-
-# 
-
-# HTML5, CSS3 (Flexbox / Grid, optimized styles)
-
-# 
-
-# JavaScript (ES6+), React.js (components + state management)
-
-# 
-
-# CSS strategy: Plain CSS / CSS Modules / CSS-in-JS (no external UI framework)
-
-# 
-
-# Backend (general / replaceable)
-
-# 
-
-# Any RESTful backend (Node/Express, Python/Flask, etc.)
-
-# 
-
-# Database: any relational/NoSQL (MySQL, Postgres, MongoDB, etc.)
-
-# 
-
-# Auth: JWT or session-based via backend
-
-# 
-
-# Payments: standard gateway JS SDK + backend token endpoints
-
-# 
-
-# Hosting
-
-# 
-
-# Frontend: Vercel / Netlify / static host
-
-# 
-
-# Backend: Heroku / Render / VPS
-
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
