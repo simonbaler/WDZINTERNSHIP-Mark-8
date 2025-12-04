@@ -78,7 +78,7 @@ export async function generateTextContent(prompt: string, imageUrl?: string): Pr
       throw new Error('Gemini API key missing');
     }
 
-    let parts: any[] = [{ text: prompt }];
+    const parts: any[] = [{ text: prompt }];
 
     if (imageUrl) {
       const res = await fetch(imageUrl);

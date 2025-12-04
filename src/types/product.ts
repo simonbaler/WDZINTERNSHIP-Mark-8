@@ -34,6 +34,7 @@ export interface Product {
     [key: string]: string;
   };
   variants?: ProductVariant[];
+  dietary?: ('professional' | 'amateur' | 'compact' | 'vintage' | 'digital' | 'manual')[];
 }
 
 export interface CartItem {

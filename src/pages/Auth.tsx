@@ -15,13 +15,18 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { LanguageSelector } from '@/components/auth/LanguageSelector';
+import { useLanguageStore, type Language } from '@/store/languageStore';
+import { t } from '@/lib/translations';
 import { toast } from 'sonner';
 
 export default function Auth() {
   const navigate = useNavigate();
   const { user, signIn, signUp } = useAuth();
+  const { language, setLanguage, setFirstTimeUser } = useLanguageStore();
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   // Login form state variables
   const [loginEmail, setLoginEmail] = useState('');
@@ -79,11 +84,10 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast.success('Logged in successfully!');
-      navigate('/');
+      // Show language selector on first login
+      setShowLanguageSelector(true);
     } catch (error: any) {
       toast.error(error.message || 'Failed to login');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -111,35 +115,48 @@ export default function Auth() {
       if (error) throw error;
 
       toast.success('Account created successfully! You can now login.');
-      // Switch to login tab (TODO: implement switching tabs if necessary)
+      // Show language selector on first signup
+      setShowLanguageSelector(true);
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLanguageSelect = (selectedLanguage: Language) => {
+    setLanguage(selectedLanguage);
+    setFirstTimeUser(false);
+    toast.success(t(selectedLanguage, 'auth.loggedInSuccessfully'));
+    navigate('/');
   };
 
   // JSX rendering for login and signup forms with tabs and inputs
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
+      <LanguageSelector
+        isOpen={showLanguageSelector}
+        onClose={() => setShowLanguageSelector(false)}
+        onSelectLanguage={handleLanguageSelect}
+      />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
         <Card className="p-8">
-          <h1 className="text-3xl font-bold text-center mb-6">Welcome to LENS</h1>
+          <h1 className="text-3xl font-bold text-center mb-6">{t(language, 'auth.welcome')}</h1>
           
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">{t(language, 'auth.login')}</TabsTrigger>
+              <TabsTrigger value="signup">{t(language, 'auth.signup')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div>
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-email">{t(language, 'auth.email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -155,7 +172,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="login-password">Password</Label>
+                  <Label htmlFor="login-password">{t(language, 'auth.password')}</Label>
                   <Input
                     id="login-password"
                     type="password"
@@ -167,7 +184,7 @@ export default function Auth() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? t(language, 'auth.loggingIn') : t(language, 'auth.login')}
                 </Button>
               </form>
             </TabsContent>
@@ -175,7 +192,7 @@ export default function Auth() {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4 mt-4">
                 <div>
-                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Label htmlFor="signup-name">{t(language, 'auth.fullName')}</Label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -191,7 +208,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t(language, 'auth.email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -207,7 +224,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signup-phone">Phone Number</Label>
+                  <Label htmlFor="signup-phone">{t(language, 'auth.phoneNumber')}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -223,7 +240,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signup-address">Address</Label>
+                  <Label htmlFor="signup-address">{t(language, 'auth.address')}</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -240,7 +257,7 @@ export default function Auth() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="signup-city">City</Label>
+                    <Label htmlFor="signup-city">{t(language, 'auth.city')}</Label>
                     <Input
                       id="signup-city"
                       type="text"
@@ -251,7 +268,7 @@ export default function Auth() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="signup-state">State</Label>
+                    <Label htmlFor="signup-state">{t(language, 'auth.state')}</Label>
                     <Input
                       id="signup-state"
                       type="text"
@@ -264,7 +281,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signup-pincode">Pincode</Label>
+                  <Label htmlFor="signup-pincode">{t(language, 'auth.pincode')}</Label>
                   <Input
                     id="signup-pincode"
                     type="text"
@@ -276,7 +293,7 @@ export default function Auth() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t(language, 'auth.password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -289,7 +306,7 @@ export default function Auth() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating account...' : 'Create Account'}
+                  {isLoading ? t(language, 'auth.creatingAccount') : t(language, 'auth.signup')}
                 </Button>
               </form>
             </TabsContent>

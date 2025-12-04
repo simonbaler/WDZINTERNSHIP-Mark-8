@@ -1,62 +1,92 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useProductsStore } from '@/store/productsStore';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Product } from '@/types/product';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import AdminCategoriesManagement from './CategoryManagement';
 
 export default function AdminCategories() {
   const products = useProductsStore((s) => s.products);
   const updateProduct = useProductsStore((s) => s.updateProduct);
-  const [selectedId, setSelectedId] = useState<string>('');
-  const [category, setCategory] = useState<Product['category']>('camera');
+  const { categories } = useCategoriesStore();
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<Product['category']>('camera');
 
-  const categories = useMemo<Product['category'][]>(() => ['camera', 'lens', 'accessory', 'bundle'], []);
-
-  const handleApply = () => {
-    if (!selectedId) return;
-    updateProduct(selectedId, { category });
+  const handleAssignCategory = () => {
+    if (!selectedProductId) {
+      toast.error('Please select a product');
+      return;
+    }
+    updateProduct(selectedProductId, { category: selectedCategory });
     toast.success('Category updated');
+    setSelectedProductId('');
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Categories</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Assign Category</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <Tabs defaultValue="manage" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manage">Manage Categories</TabsTrigger>
+          <TabsTrigger value="assign">Assign Products</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="manage" className="space-y-6">
+          <AdminCategoriesManagement />
+        </TabsContent>
+
+        <TabsContent value="assign" className="space-y-6">
           <div>
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a product" />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <h1 className="text-3xl font-bold">Assign Product Categories</h1>
+            <p className="text-muted-foreground mt-2">Assign products to existing categories</p>
           </div>
-          <div>
-            <Select value={category} onValueChange={(v) => setCategory(v as Product['category'])}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={handleApply} disabled={!selectedId}>Apply</Button>
-          </div>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Bulk Category Assignment</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Select Product</label>
+                <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Select Category</label>
+                <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as Product['category'])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.slug}>
+                        {c.icon} {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleAssignCategory} disabled={!selectedProductId} className="w-full md:w-auto">
+                  Assign Category
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

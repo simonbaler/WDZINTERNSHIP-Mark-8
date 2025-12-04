@@ -114,6 +114,13 @@ export default function Admin() {
       color: 'text-fuchsia-500',
     },
     {
+      title: 'Hero Slides',
+      description: 'Manage homepage hero images',
+      icon: ImageIcon,
+      href: '/admin/hero-slides',
+      color: 'text-teal-500',
+    },
+    {
       title: 'Welcome Video',
       description: 'Manage intro video for welcome page',
       icon: Video,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -8,136 +8,198 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SemanticSearch } from '@/components/search/SemanticSearch';
 import { VisualSearch } from '@/components/search/VisualSearch';
+import { useAISearch, filterProductsByAIInterpretation } from '@/lib/aiSearch';
+import { motion } from 'framer-motion';
+import { Card } from '@/components/ui/card';
 
 export default function Search() {
+  const products = useProductsStore((s) => s.products);
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const query = searchParams.get('q') || '';
-  const [searchTerm, setSearchTerm] = useState(query);
-  
-  // Check if we have semantic/visual search results
-  const semanticResults = location.state?.results;
-  const searchType = location.state?.searchType;
-  
-  const storeProducts = useProductsStore((s) => s.products);
-  const products = semanticResults || storeProducts;
-  const isLoading = false;
+  const initialQuery = searchParams.get('q') || '';
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
+  const [aiResult, setAiResult] = useState<{ interpretation: string; suggestions: string[]; relatedTerms: string[] } | null>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const semanticResults = location.state?.results as any[] | undefined;
+  const [filters, setFilters] = useState<{ brand?: string; category?: string; priceMin?: number; priceMax?: number }>({});
 
-  // Generate search keywords from products
-  const searchKeywords = useMemo(() => {
-    const keywords = new Set<string>();
-    products.forEach(product => {
-      product.name?.split(' ').forEach(word => keywords.add(word.toLowerCase()));
-      product.brand && keywords.add(product.brand.toLowerCase());
-      if (product.specs) {
-        Object.values(product.specs).forEach(val => {
-          if (typeof val === 'string') {
-            val.split(' ').forEach(word => keywords.add(word.toLowerCase()));
-          }
-        });
-      }
+  useEffect(() => {
+    if (searchTerm && searchTerm.length > 2) {
+      setIsLoadingAI(true);
+      useAISearch(searchTerm)
+        .then((res) => {
+          setAiResult(res);
+          setIsLoadingAI(false);
+        })
+        .catch(() => setIsLoadingAI(false));
+    } else {
+      setAiResult(null);
+    }
+  }, [searchTerm]);
+
+  const facets = useMemo(() => {
+    const brandCounts: Record<string, number> = {};
+    const categoryCounts: Record<string, number> = {};
+    products.forEach((p) => {
+      if (p.brand) brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
+      if (p.category) categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
     });
-    return Array.from(keywords).filter(k => k.length > 2).slice(0, 20);
+    const priceRanges = [
+      { min: 0, max: 50000 },
+      { min: 50000, max: 100000 },
+      { min: 100000, max: 200000 },
+      { min: 200000, max: 999999 },
+    ].map((r) => ({
+      ...r,
+      count: products.filter((p) => (p.price || 0) >= r.min && (p.price || 0) <= r.max).length,
+    }));
+    return {
+      brands: Object.entries(brandCounts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count),
+      categories: Object.entries(categoryCounts).map(([value, count]) => ({ value, count })),
+      priceRanges,
+    };
   }, [products]);
 
-  // If semantic results, use them directly, otherwise filter
-  const filteredProducts = semanticResults 
-    ? semanticResults.map((r: any) => ({
-        id: r.product_data.id,
-        name: r.product_data.name,
-        brand: r.product_data.brand,
-        price: r.product_data.price,
-        images: r.product_data.images || [],
-        slug: r.product_data.slug,
-        similarity: r.similarity
-      }))
-    : products.filter((product) =>
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const baseResults = useMemo(() => {
+    if (Array.isArray(semanticResults) && semanticResults.length > 0) {
+      return semanticResults.map((r: any) => r.product_data || r);
+    }
+    if (!searchTerm) return products;
+    const q = searchTerm.toLowerCase();
+    return products.filter((p) =>
+      p.name?.toLowerCase().includes(q) ||
+      p.brand?.toLowerCase().includes(q) ||
+      p.description?.toLowerCase().includes(q)
+    );
+  }, [semanticResults, products, searchTerm]);
 
-  const suggestedKeywords = searchKeywords
-    .filter(k => k.includes(searchTerm.toLowerCase()) && k !== searchTerm.toLowerCase())
-    .slice(0, 8);
+  const filteredProducts = useMemo(() => {
+    let res = baseResults;
+    if (aiResult?.interpretation) {
+      res = filterProductsByAIInterpretation(res, aiResult.interpretation);
+    }
+    return res.filter((product: any) => {
+      const matchesBrand = filters.brand ? product.brand === filters.brand : true;
+      const matchesCategory = filters.category ? product.category === filters.category : true;
+      const matchesPriceMin = filters.priceMin != null ? (product.price || 0) >= filters.priceMin : true;
+      const matchesPriceMax = filters.priceMax != null ? (product.price || 0) <= filters.priceMax : true;
+      return matchesBrand && matchesCategory && matchesPriceMin && matchesPriceMax;
+    });
+  }, [baseResults, aiResult, filters]);
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="max-w-[1400px] mx-auto px-6">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-6">Search</h1>
-          
-          <div className="space-y-4">
-            <div className="flex gap-2 max-w-2xl">
-              <SemanticSearch />
-              <VisualSearch />
-            </div>
-            
-            {searchType && (
-              <Badge variant="secondary">
-                {searchType === 'semantic' ? '🧠 AI Semantic Search' : '🖼️ Visual Search'}
-              </Badge>
-            )}
-            
-            <div className="relative max-w-2xl">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search cameras, lenses, accessories..."
-                className="pl-10 h-12"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            {/* Keyword Suggestions */}
-            {searchTerm && suggestedKeywords.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-muted-foreground">Suggestions:</span>
-                {suggestedKeywords.map((keyword) => (
-                  <Badge 
-                    key={keyword} 
-                    variant="outline" 
-                    className="cursor-pointer hover:bg-accent"
-                    onClick={() => setSearchTerm(keyword)}
-                  >
-                    {keyword}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex-1 flex items-center gap-2">
+          <SearchIcon className="h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search cameras, lenses, accessories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
         </div>
+        <div className="flex items-center gap-2">
+          <SemanticSearch />
+          <VisualSearch />
+        </div>
+      </div>
 
-        {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-[400px]" />
-            ))}
+      {aiResult && (
+        <Card className="p-4 mb-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">AI Interpretation</p>
+              <p className="text-sm mt-1">{aiResult.interpretation}</p>
+            </div>
+            {isLoadingAI && <span className="text-xs text-muted-foreground">Loading...</span>}
           </div>
-        )}
+          {aiResult.suggestions.length > 0 && (
+            <div className="mt-3 flex gap-2 flex-wrap">
+              {aiResult.suggestions.map((s) => (
+                <Badge key={s} variant="secondary" onClick={() => setSearchTerm(s)} className="cursor-pointer">
+                  {s}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
-        {searchTerm && (
-          <p className="text-muted-foreground mb-6">
-            {filteredProducts.length} results for "{searchTerm}"
-          </p>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <aside className="lg:col-span-1">
+          <Card className="p-4">
+            <p className="text-sm font-medium mb-3">Brand</p>
+            <div className="flex gap-2 flex-wrap mb-4">
+              {facets.brands.map((b) => (
+                <Badge
+                  key={b.value}
+                  variant={filters.brand === b.value ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => setFilters((f) => ({ ...f, brand: f.brand === b.value ? undefined : b.value }))}
+                >
+                  {b.value} ({b.count})
+                </Badge>
+              ))}
+            </div>
 
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <SearchIcon className="h-24 w-24 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-2">No results found</h2>
-            <p className="text-muted-foreground">
-              Try adjusting your search terms
+            <p className="text-sm font-medium mb-3">Category</p>
+            <div className="flex gap-2 flex-wrap mb-4">
+              {facets.categories.map((c) => (
+                <Badge
+                  key={c.value}
+                  variant={filters.category === c.value ? 'default' : 'outline'}
+                  className="capitalize cursor-pointer"
+                  onClick={() => setFilters((f) => ({ ...f, category: f.category === c.value ? undefined : c.value }))}
+                >
+                  {c.value}
+                </Badge>
+              ))}
+            </div>
+
+            <p className="text-sm font-medium mb-3">Price</p>
+            <div className="flex gap-2 flex-wrap">
+              {facets.priceRanges.map((r) => (
+                <Badge
+                  key={`${r.min}-${r.max}`}
+                  variant={filters.priceMin === r.min && filters.priceMax === r.max ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      priceMin: f.priceMin === r.min && f.priceMax === r.max ? undefined : r.min,
+                      priceMax: f.priceMin === r.min && f.priceMax === r.max ? undefined : r.max,
+                    }))
+                  }
+                >
+                  ₹{r.min.toLocaleString()} - ₹{r.max.toLocaleString()} ({r.count})
+                </Badge>
+              ))}
+            </div>
+          </Card>
+        </aside>
+
+        <div className="lg:col-span-3">
+          {searchTerm && (
+            <p className="text-muted-foreground mb-4">
+              {filteredProducts.length} results for "{searchTerm}"
             </p>
-          </div>
-        )}
+          )}
+
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product: any) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <SearchIcon className="h-24 w-24 mx-auto mb-4 text-muted-foreground" />
+              <h2 className="text-2xl font-bold mb-2">No results found</h2>
+              <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

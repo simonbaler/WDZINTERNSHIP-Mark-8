@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProductImages } from '@/lib/useProductImages';
 import { Product } from '@/types/product';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 interface ProductCardEnhancedProps {
   product: Product;
@@ -27,9 +28,11 @@ export function ProductCardEnhanced({ product }: ProductCardEnhancedProps) {
       {/* Image Section */}
       <Link to={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
-          <img
+          <OptimizedImage
             src={currentImage}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           
