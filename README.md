@@ -112,6 +112,3 @@ LENS is a production-ready e‑commerce frontend for cameras, lenses, and access
 - Run `npm run lint` before pushing
 - Keep to existing component patterns, styling tokens, and accessibility practices
 
-## License
-
-This project is provided as a template demo for educational and prototyping purposes.
